@@ -18,6 +18,7 @@
 ├── LICENSE
 ├── SECURITY.md
 ├── .gitignore
+├── .gitattributes
 ├── .env.example
 ├── input/
 │   ├── sample_transcript.txt
