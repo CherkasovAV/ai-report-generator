@@ -23,7 +23,7 @@ from utils.ai_processor import (
     process_dialog_with_ai,
     process_marketplace_card_with_ai,
 )
-from utils.logging_setup import configure_logging, quiet_cli_dialog
+from utils.logging_setup import configure_logging, quiet_cli_dialog, quiet_generation_logs
 from utils.pdf_generator import (
     PROJECT_ROOT,
     generate_design_pdf_report,
@@ -344,7 +344,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "-v",
         "--verbose",
         action="store_true",
-        help="Подробные логи в stderr (DEBUG) и полный traceback при ошибках. Во время меню и ввода транскрипции (-i) сообщения INFO по-прежнему скрыты, чтобы не мешать вопросам.",
+        help=(
+            "Подробные логи в stderr (DEBUG) и полный traceback при ошибках. "
+            "Без этого флага после ввода данных и во время генерации PDF в консоль не пишутся INFO/WARNING "
+            "(в т.ч. шум GLib-GIO от WeasyPrint на Windows). Во время меню и -i по-прежнему скрыты INFO."
+        ),
     )
     return p
 
@@ -352,7 +356,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
     configure_logging(verbose=args.verbose)
-    if not _cli_should_defer_startup_log(args):
+    if not _cli_should_defer_startup_log(args) and args.verbose:
         _log_cli_startup(args.report)
 
     if args.serve:
@@ -361,12 +365,14 @@ def main(argv: list[str] | None = None) -> int:
     if _cli_needs_interactive_menu(args):
         with quiet_cli_dialog():
             report_type, transcript, product, price, notes = run_interactive_menu_or_prompts(args)
-        _log_cli_startup(report_type)
+        if args.verbose:
+            _log_cli_startup(report_type)
         try:
-            if report_type == REPORT_MARKETPLACE:
-                out = run_marketplace_pipeline(product, price, notes)
-            else:
-                out = run_pipeline(transcript, report_type)
+            with quiet_generation_logs(verbose=args.verbose):
+                if report_type == REPORT_MARKETPLACE:
+                    out = run_marketplace_pipeline(product, price, notes)
+                else:
+                    out = run_pipeline(transcript, report_type)
         except Exception as exc:  # noqa: BLE001
             if args.verbose:
                 traceback.print_exception(type(exc), exc, exc.__traceback__, file=sys.stderr)
@@ -387,7 +393,8 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         notes = (args.product_notes or "").strip()
         try:
-            out = run_marketplace_pipeline(product, price, notes)
+            with quiet_generation_logs(verbose=args.verbose):
+                out = run_marketplace_pipeline(product, price, notes)
         except Exception as exc:  # noqa: BLE001
             if args.verbose:
                 traceback.print_exception(type(exc), exc, exc.__traceback__, file=sys.stderr)
@@ -401,7 +408,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.interactive:
         with quiet_cli_dialog():
             transcript = read_transcript_interactive()
-        _log_cli_startup(args.report)
+        if args.verbose:
+            _log_cli_startup(args.report)
     elif args.transcript_file:
         if args.transcript_file.strip() == "-":
             transcript = read_transcript_stdin()
@@ -427,7 +435,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        out = run_pipeline(transcript, args.report)
+        with quiet_generation_logs(verbose=args.verbose):
+            out = run_pipeline(transcript, args.report)
     except Exception as exc:  # noqa: BLE001 — CLI: показать причину пользователю
         if args.verbose:
             traceback.print_exception(type(exc), exc, exc.__traceback__, file=sys.stderr)

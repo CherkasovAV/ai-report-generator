@@ -8,10 +8,10 @@ from datetime import datetime
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from weasyprint import HTML
+
+from utils.logging_setup import silence_native_stderr
 
 logger = logging.getLogger(__name__)
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = PROJECT_ROOT / "templates"
 REPORTS_DIR = PROJECT_ROOT / "reports"
@@ -90,7 +90,11 @@ def render_marketplace_report_html(context: dict) -> str:
 
 def html_to_pdf(html_string: str, output_path: Path) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    HTML(string=html_string, base_url=str(TEMPLATES_DIR)).write_pdf(str(output_path))
+    # Импорт WeasyPrint инициализирует GTK/GLib и на Windows даёт GLib-GIO-WARNING в stderr — глушим fd на время импорта и записи PDF.
+    with silence_native_stderr():
+        from weasyprint import HTML
+
+        HTML(string=html_string, base_url=str(TEMPLATES_DIR)).write_pdf(str(output_path))
     return output_path
 
 
