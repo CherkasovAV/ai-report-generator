@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Карточка товара — {{ product_name or "Товар" }}</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    .card-root {
+      position: relative;
+      width: 210mm;
+      min-height: 297mm;
+      {% if card_background_data_url %}
+      background-image: url("{{ card_background_data_url | safe }}");
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      {% else %}
+      background: linear-gradient(145deg, #1e293b 0%, #4c1d95 55%, #7c3aed 100%);
+      {% endif %}
+    }
+    .shade {
+      position: absolute;
+      left: 0; right: 0; top: 0; bottom: 0;
+      background: linear-gradient(
+        to top,
+        rgba(15, 23, 42, 0.88) 0%,
+        rgba(15, 23, 42, 0.55) 38%,
+        rgba(15, 23, 42, 0.2) 72%,
+        rgba(15, 23, 42, 0.05) 100%
+      );
+    }
+    .content {
+      position: relative;
+      z-index: 1;
+      padding: 22mm 18mm 24mm 18mm;
+      min-height: 297mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      color: #f8fafc;
+      font-family: "Segoe UI", DejaVu Sans, Arial, sans-serif;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 9pt;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #c4b5fd;
+      margin-bottom: 10mm;
+    }
+    h1 {
+      margin: 0 0 6mm 0;
+      font-size: 26pt;
+      font-weight: 700;
+      line-height: 1.15;
+      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+    }
+    .price {
+      font-size: 22pt;
+      font-weight: 800;
+      color: #fef08a;
+      margin-bottom: 8mm;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+    }
+    .description {
+      font-size: 11pt;
+      line-height: 1.5;
+      max-width: 165mm;
+      color: #e2e8f0;
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+      white-space: pre-wrap;
+    }
+    footer.note {
+      margin-top: auto;
+      padding-top: 10mm;
+      font-size: 7.5pt;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="card-root">
+    <div class="shade"></div>
+    <div class="content">
+      <div class="badge">Карточка маркетплейса</div>
+      <h1>{{ product_name }}</h1>
+      <div class="price">{{ price_display }}</div>
+      <div class="description">{{ description }}</div>
+      {% if not card_background_data_url %}
+      <footer class="note">Фон не сгенерирован (Images API недоступен или пустой промпт) — использован запасной градиент.</footer>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

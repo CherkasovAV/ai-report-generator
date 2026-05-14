@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Отчёт по диалогу — {{ client_name or "Клиент" }}</title>
+  <style>
+    @page { size: A4; margin: 18mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", DejaVu Sans, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      color: #1a1a1a;
+    }
+    header {
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 10px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0 0 4px 0;
+      font-size: 18pt;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .meta { font-size: 9.5pt; color: #64748b; }
+    section {
+      margin-bottom: 16px;
+      page-break-inside: avoid;
+    }
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: 12pt;
+      color: #1e40af;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+    p { margin: 0; white-space: pre-wrap; }
+    footer {
+      margin-top: 28px;
+      font-size: 8.5pt;
+      color: #94a3b8;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Отчёт по клиентскому диалогу</h1>
+    <div class="meta">Сформировано автоматически</div>
+  </header>
+
+  <section>
+    <h2>Клиент</h2>
+    <div class="card"><p>{{ client_name or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Тема</h2>
+    <div class="card"><p>{{ topic or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Основной запрос</h2>
+    <div class="card"><p>{{ main_request or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Желаемые сроки и стоимость</h2>
+    <div class="card"><p>{{ deadlines_and_cost or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Что обязательно в финальном продукте</h2>
+    <div class="card"><p>{{ product_essentials or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Настроение / тон</h2>
+    <div class="card"><p>{{ mood or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Следующие шаги</h2>
+    <div class="card"><p>{{ next_steps or "—" }}</p></div>
+  </section>
+
+  <footer>AI Client Report Generator · данные извлечены моделью из транскрипции</footer>
+</body>
+</html>

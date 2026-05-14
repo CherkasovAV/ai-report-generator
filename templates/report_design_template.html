@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Заказ на дизайн сайта — {{ client_name or "Клиент" }}</title>
+  <style>
+    @page { size: A4; margin: 16mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", DejaVu Sans, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      color: #1a1a1a;
+    }
+    header {
+      border-bottom: 2px solid #7c3aed;
+      padding-bottom: 10px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0 0 4px 0;
+      font-size: 17pt;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .meta { font-size: 9.5pt; color: #64748b; }
+    section {
+      margin-bottom: 14px;
+      page-break-inside: avoid;
+    }
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: 11.5pt;
+      color: #5b21b6;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .card {
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+    .card-muted {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 9.5pt;
+      color: #334155;
+      white-space: pre-wrap;
+      word-break: normal;
+      overflow-wrap: anywhere;
+    }
+    p { margin: 0; white-space: pre-wrap; }
+    .preview-wrap {
+      text-align: center;
+      page-break-inside: avoid;
+    }
+    .preview-wrap img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+    footer {
+      margin-top: 22px;
+      font-size: 8.5pt;
+      color: #94a3b8;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Отчёт по заказу: дизайн сайта</h1>
+    <div class="meta">Транскрипция → структура брифа → промпт для превью → изображение (OpenAI)</div>
+  </header>
+
+  <section>
+    <h2>Заказчик</h2>
+    <div class="card"><p>{{ client_name or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Проект</h2>
+    <div class="card"><p>{{ project_title or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Суть заказа</h2>
+    <div class="card"><p>{{ order_summary or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Страницы и функции</h2>
+    <div class="card"><p>{{ pages_and_features or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Визуальное направление</h2>
+    <div class="card"><p>{{ visual_direction or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Сроки и бюджет</h2>
+    <div class="card"><p>{{ deadlines_and_budget or "—" }}</p></div>
+  </section>
+
+  <section>
+    <h2>Промпт для генерации превью (English)</h2>
+    <div class="card-muted">{{ image_prompt or "—" }}</div>
+  </section>
+
+  <section>
+    <h2>Пример визуала (сгенерировано)</h2>
+    {% if preview_image_data_url %}
+    <div class="preview-wrap">
+      <img src="{{ preview_image_data_url | safe }}" alt="Превью концепции сайта" />
+    </div>
+    {% else %}
+    <div class="card"><p>Изображение не сгенерировано (нет промпта, ошибка API или шлюз без поддержки Images).</p></div>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>Следующие шаги</h2>
+    <div class="card"><p>{{ next_steps or "—" }}</p></div>
+  </section>
+
+  <footer>AI Client Report Generator · режим «дизайн сайта»</footer>
+</body>
+</html>

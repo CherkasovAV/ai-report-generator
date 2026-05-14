@@ -1,0 +1,9 @@
+# Нормализация переводов строк для кроссплатформенного репозитория
+* text=auto
+
+*.py   text eol=lf
+*.md   text eol=lf
+*.html text eol=lf
+*.txt  text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
