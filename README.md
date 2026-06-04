@@ -9,6 +9,12 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
+### Примеры отчётов
+
+| Client | Design | Marketplace |
+|--------|--------|-------------|
+| ![Client report](screen/screen_client.png) | ![Design report](screen/screen_design.png) | ![Marketplace card](screen/screen_marketplace.png) |
+
 ---
 
 ## 🚀 Возможности
@@ -42,6 +48,7 @@ ai-report-generator/
 │   ├── report_design_template.html
 │   └── report_marketplace_template.html
 ├── input/                  # Примеры транскриптов
+├── screen/                 # Скриншоты отчётов для README
 ├── reports/                # Сгенерированные PDF (игнорируются Git)
 ├── requirements.txt
 ├── .env.example

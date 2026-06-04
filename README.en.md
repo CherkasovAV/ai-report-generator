@@ -9,6 +9,12 @@ The service automatically transforms text transcripts (client dialogs, briefs) i
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
+### Report examples
+
+| Client | Design | Marketplace |
+|--------|--------|-------------|
+| ![Client report](screen/screen_client.png) | ![Design report](screen/screen_design.png) | ![Marketplace card](screen/screen_marketplace.png) |
+
 ---
 
 ## 🚀 Features
@@ -42,6 +48,7 @@ ai-report-generator/
 │   ├── report_design_template.html
 │   └── report_marketplace_template.html
 ├── input/                  # Sample transcripts
+├── screen/                 # Report screenshots for README
 ├── reports/                # Generated PDFs (gitignored)
 ├── requirements.txt
 ├── .env.example
