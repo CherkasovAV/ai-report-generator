@@ -11,9 +11,14 @@
 
 ### Примеры отчётов
 
-| Client | Design | Marketplace |
-|--------|--------|-------------|
-| ![Client report](screen/screen_client.png) | ![Design report](screen/screen_design.png) | ![Marketplace card](screen/screen_marketplace.png) |
+**Отчёт по диалогу с клиентом**
+![Client report](screen/screen_client.png)
+
+**Бриф на дизайн сайта**
+![Design report](screen/screen_design.png)
+
+**Карточка товара для маркетплейса**
+![Marketplace card](screen/screen_marketplace.png)
 
 ---
 

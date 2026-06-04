@@ -11,9 +11,14 @@ The service automatically transforms text transcripts (client dialogs, briefs) i
 
 ### Report examples
 
-| Client | Design | Marketplace |
-|--------|--------|-------------|
-| ![Client report](screen/screen_client.png) | ![Design report](screen/screen_design.png) | ![Marketplace card](screen/screen_marketplace.png) |
+**Client dialog report**
+![Client report](screen/screen_client.png)
+
+**Website design brief**
+![Design report](screen/screen_design.png)
+
+**Marketplace product card**
+![Marketplace card](screen/screen_marketplace.png)
 
 ---
 
