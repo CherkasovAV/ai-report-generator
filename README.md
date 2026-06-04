@@ -1,256 +1,351 @@
-# AI Client Report Generator
+**[English version](README.en.md)**
 
-Сервис на Python: вызывается **OpenAI** (Chat Completions), формируется **PDF** (Jinja2 + WeasyPrint). Режимы: **отчёт по диалогу клиента**, **отчёт по заказу на дизайн сайта** с превью и **карточка товара для маркетплейса** (фон из Images API + название, цена, описание на странице).
+# AI Report Generator
 
-## Возможности
+**Генератор структурированных бизнес-отчётов в PDF на базе LLM**
 
-- **Отчёт `client`**: поля по диалогу (клиент, тема, запрос, сроки/стоимость, продукт, тон, шаги).
-- **Отчёт `design`**: бриф на дизайн сайта из транскрипции + **англоязычный промпт** для генерации превью + **изображение** в PDF (если доступен Images API).
-- **Отчёт `marketplace`**: по **названию товара и цене** чат (`OPENAI_MODEL`, по умолчанию `gpt-4o-mini`) возвращает JSON (название для карточки, цена для отображения, описание, **англ. промпт для картинки**); фон страницы — **`gpt-image-1`**; в PDF поверх фона — название, цена, описание.
-- **OpenAI-совместимый** endpoint (официальный OpenAI или шлюз вроде **ProxyAPI** для чата; для картинок шлюз должен поддерживать `/images/generations`, иначе PDF будет без превью).
-- **Логи** в stderr, **`-v`** для DEBUG.
-- **Flask** API (`POST /generate`).
+Сервис автоматически превращает текстовые транскрипты (диалоги с клиентами, брифы) в профессиональные PDF-документы. Поддерживает три режима: отчёт по диалогу, бриф на дизайн сайта с превью и карточку товара для маркетплейса.
 
-## Структура проекта
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+
+---
+
+## 🚀 Возможности
+
+| Режим | Что делает | Результат |
+|-------|------------|-----------|
+| **Client** | Анализирует диалог с клиентом | PDF с полями: клиент, тема, запрос, сроки/бюджет, продукт, тон, шаги |
+| **Design** | Обрабатывает бриф на дизайн сайта | Структурированный бриф + промпт для генерации превью + изображение в PDF |
+| **Marketplace** | Создаёт карточку товара по названию и цене | Готовая карточка с фоном от GPT-Image-1, описанием и ценой |
+
+### Технические особенности
+
+- **OpenAI-совместимый API** — работает с официальным OpenAI или шлюзами (ProxyAPI и др.)
+- **Flask API** — интеграция в существующие процессы через `POST /generate`
+- **Гибкий ввод** — файлы, stdin, интерактивный режим
+- **Детальное логирование** — режим `-v` для отладки
+
+---
+
+## 📦 Структура проекта
 
 ```
-├── main.py
-├── LICENSE
-├── SECURITY.md
-├── .gitignore
-├── .gitattributes
-├── .env.example
-├── input/
-│   ├── sample_transcript.txt
-│   ├── sample_design_transcript.txt
-│   └── sample_design_transcript_photo.txt
+ai-report-generator/
+├── main.py                 # Точка входа, CLI + Flask API
+├── utils/
+│   ├── ai_processor.py     # LLM-обработка транскриптов
+│   ├── pdf_generator.py    # Генерация PDF через WeasyPrint
+│   └── logging_setup.py    # Настройка логирования
 ├── templates/
 │   ├── report_template.html
 │   ├── report_design_template.html
 │   └── report_marketplace_template.html
-├── reports/          # сюда пишутся PDF (.gitignore, в репо только .gitkeep)
-├── utils/
-│   ├── ai_processor.py
-│   ├── pdf_generator.py
-│   └── logging_setup.py
-├── .env              # локально; в Git не входит
+├── input/                  # Примеры транскриптов
+├── reports/                # Сгенерированные PDF (игнорируются Git)
 ├── requirements.txt
+├── .env.example
 └── README.md
 ```
 
-## Установка
+---
 
-Нужен **Python 3.10+**. Рекомендуется виртуальное окружение.
+## ⚙️ Установка
 
-### Windows (PowerShell)
+### Требования
 
-```powershell
-cd "D:\путь\к\папке\VPf10 Кейс 2 AI-автоматизация"
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-copy .env.example .env
-notepad .env
-```
+- Python 3.10+
+- API-ключ OpenAI или совместимого шлюза (например, [ProxyAPI](https://proxyapi.ru/))
 
-### Linux / macOS
+### Шаги
 
 ```bash
-cd /path/to/project
-python3 -m venv .venv
+# 1. Клонировать репозиторий
+git clone https://github.com/CherkasovAV/ai-report-generator.git
+cd ai-report-generator
+
+# 2. Создать виртуальное окружение
+python -m venv .venv
+
+# 3. Активировать
+# Windows:
+.venv\Scripts\activate
+# Linux/macOS:
 source .venv/bin/activate
+
+# 4. Установить зависимости
 pip install -r requirements.txt
+
+# 5. Настроить переменные окружения
 cp .env.example .env
 ```
 
-**WeasyPrint** для PDF использует системные библиотеки. На Windows при проблемах смотрите [установку WeasyPrint](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation).
+### Системные зависимости
 
-### Сообщения `GLib-GIO-WARNING` в консоли
+**WeasyPrint** требует системные библиотеки. На Windows — установите [GTK3](https://docs.gtk.org/gtk3/getting_started/windows.html) или используйте [официальный installer WeasyPrint](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation).
 
-На Windows GTK/WeasyPrint иногда пишут в stderr строки вида `GLib-GIO-WARNING ... UWP app ...` — это **не ошибка** вашего сценария. При обычном запуске (без **`-v`**) программа **подавляет stderr на время записи PDF**, поэтому эти сообщения не должны появляться; служебные логи Python уровня INFO/WARNING на этапе генерации тоже скрыты. С флагом **`-v`** логирование остаётся подробным, предупреждения GLib при необходимости снова могут быть видны.
+На Linux:
+```bash
+# Debian/Ubuntu
+sudo apt-get install libpango1.0-dev libharfbuzz-dev libffi-dev
 
----
-
-## Настройка `.env`
-
-| Переменная | Описание |
-|------------|----------|
-| `PROXY_API_KEY` или `API_KEY` | Ключ шлюза (ProxyAPI) или запасной вариант имени переменной |
-| `OPENAI_BASE_URL` | Базовый URL **OpenAI-совместимого** API (**обязателен**, если нет прямого `OPENAI_API_KEY` и используется только ключ шлюза) |
-| `OPENAI_API_KEY` | Прямой ключ OpenAI (если задан, используется вместо `PROXY_API_KEY`) |
-| `OPENAI_MODEL` | Модель для **чата** (JSON из транскрипции) |
-| `OPENAI_IMAGE_MODEL` | Модель для **картинки** в режиме `design`. **Режим `marketplace`** для фона карточки **всегда** вызывает **`gpt-image-1`** (эта переменная на него не влияет). **ProxyAPI:** `gpt-image-1`, … — см. [документацию](https://proxyapi.ru/docs/openai-image-generation); DALL·E 3 на шлюзе часто **не** поддерживается. Для `gpt-image-*` запрос формируется **без** `response_format` (у ProxyAPI иначе ошибка `unknown_parameter`). Официальный OpenAI: можно `dall-e-3` |
-| `OPENAI_IMAGE_SIZE` | Размер, например `1024x1024` (зависит от модели) |
-| `OPENAI_IMAGE_QUALITY` | Для `gpt-image-*`: `low` / `medium` / `high` / `auto` |
-| `OPENAI_IMAGE_DALLE_QUALITY` | Только для `dall-e-3`: `standard` или `hd` |
-
-### Типы отчёта (`--report`)
-
-| Значение | Описание |
-|----------|----------|
-| `client` | Отчёт по **диалогу с клиентом** (по умолчанию). Файл: `report_<имя>_....pdf` |
-| `design` | Отчёт по **заказу на дизайн сайта**: структура брифа + промпт для превью + изображение. Файл: `report_design_<имя>_....pdf` |
-| `marketplace` | **Карточка товара** для маркетплейса: без файла транскрипции — флаги `--product` и `--price` (опционально `--product-notes`). Файл: `report_marketplace_<товар>_....pdf` |
-
-Примеры:
-
-```powershell
-python main.py input/sample_transcript.txt
-python main.py --report design input/sample_design_transcript.txt
-python main.py --report design input/sample_design_transcript_photo.txt
-python main.py --report marketplace --product "Керамическая кружка 350 мл" --price "890 ₽"
-python main.py --report marketplace --product "Беспроводные наушники" --price "4 990" --product-notes "Акцент на шумоподавлении"
+# Fedora
+sudo dnf install pango-devel harfbuzz-devel libffi-devel
 ```
 
-Если шлюз **не проксирует** Images API или модель не поддерживается (на ProxyAPI для картинок нужны **`gpt-image-*`**, не `dall-e-3`), в логах будет предупреждение: в режиме **`design`** PDF создаётся **без** вставленной картинки (текст и промпт остаются); в режиме **`marketplace`** PDF всё равно собирается с **запасным градиентным фоном** вместо сгенерированного изображения.
-
 ---
 
-### ProxyAPI
+## 🔐 Настройка окружения
 
-Ключ ProxyAPI **не** подходит к официальному `api.openai.com`: запросы нужно слать на хост ProxyAPI. Пример из [документации ProxyAPI](https://proxyapi.ru/docs):
+Отредактируйте `.env`:
 
 ```env
-PROXY_API_KEY=ваш-ключ-из-кабинета
+# Ключ API (OpenAI или шлюз)
+PROXY_API_KEY=your-api-key-here
+
+# Базовый URL API (обязательно для шлюзов)
 OPENAI_BASE_URL=https://api.proxyapi.ru/openai/v1
+
+# Прямой ключ OpenAI (если есть — используется вместо PROXY_API_KEY)
+# OPENAI_API_KEY=sk-...
+
+# Модель для чата
 OPENAI_MODEL=gpt-4o-mini
+
+# Модель для генерации изображений (режим design)
+OPENAI_IMAGE_MODEL=gpt-image-1
+OPENAI_IMAGE_SIZE=1024x1024
+OPENAI_IMAGE_QUALITY=medium
 ```
 
-Если задан только `PROXY_API_KEY` без `OPENAI_API_KEY`, приложение **потребует** `OPENAI_BASE_URL` и завершится с явной ошибкой, если база не указана. URL с префиксом `https://` (или `http://` для отладки).
+| Переменная | Обязательна | Описание |
+|------------|-------------|----------|
+| `PROXY_API_KEY` | Да* | Ключ шлюза (ProxyAPI и аналоги) |
+| `OPENAI_BASE_URL` | Да* | URL API для шлюзов |
+| `OPENAI_API_KEY` | Да* | Прямой ключ OpenAI |
+| `OPENAI_MODEL` | Нет | Модель чата (по умолчанию `gpt-4o-mini`) |
+| `OPENAI_IMAGE_MODEL` | Нет | Модель для изображений (по умолчанию `gpt-image-1`) |
 
-### Другой OpenAI-совместимый шлюз
-
-```env
-PROXY_API_KEY=ваш-ключ
-OPENAI_BASE_URL=https://ваш-шлюз/полный/путь/v1
-OPENAI_MODEL=gpt-4o-mini
-```
-
-В логах (без раскрытия ключа) будет видно, **из какой переменной** взят ключ: `OPENAI_API_KEY`, `PROXY_API_KEY` или `API_KEY`.
+\* Требуется один из вариантов: `OPENAI_API_KEY` **или** пара `PROXY_API_KEY` + `OPENAI_BASE_URL`
 
 ---
 
-## Как пользоваться (пошагово)
+## 🎯 Использование
 
-1. Активируйте venv и перейдите в папку проекта (см. выше).
-2. Заполните `.env` (ключ и при необходимости `OPENAI_BASE_URL`).
-3. Положите файлы транскрипций в папку **`input`** (или укажите путь к файлу при запуске с аргументом). Примеры лежат в `input/sample_*.txt`.
-4. Запускайте команду **только** со строки `python ...`, без копирования приглашения `(.venv) PS D:\...>`.
+### Быстрый старт
 
-### Запуск без аргументов (меню)
+```bash
+# Запуск с примером
+python main.py input/sample_transcript.txt
 
-```powershell
+# Режим дизайна
+python main.py --report design input/sample_design_transcript.txt
+
+# Карточка товара
+python main.py --report marketplace --product "Керамическая кружка 350 мл" --price "890 ₽"
+```
+
+### Интерактивное меню
+
+```bash
 python main.py
 ```
 
-Откроется меню: **1** — отчёт по диалогу с клиентом, **2** — дизайн сайта, **3** — карточка маркетплейса. Для **1** и **2** показывается пронумерованный список **всех файлов** из папки **`input`** в корне проекта (при необходимости папка создаётся автоматически); введите **номер строки** (1…N). **0** — указать полный путь к файлу в другом месте или **`-`** для вставки транскрипции из консоли (Windows: **Ctrl+Z**, Enter; macOS/Linux: **Ctrl+D**). Для **3** — название товара и цену (дополнительное описание по желанию). Пока открыто меню или идёт ввод транскрипции с флагом **`-i`**, служебные сообщения уровня INFO в консоль не пишутся, чтобы не перебивать вопросы; после начала генерации PDF логи снова появляются (с **`-v`** — подробный DEBUG тоже после диалога).
+Меню предложит:
+1. Отчёт по диалогу с клиентом
+2. Бриф на дизайн сайта
+3. Карточка товара для маркетплейса
+0. Ввести путь к файлу или транскрипцию вручную
 
-Если задано `python main.py --report marketplace` без полной пары `--product` и `--price`, запрашиваются только недостающие поля (без выбора типа в меню).
+### Ввод транскрипции с клавиатуры
 
-### Быстрый тест
-
-```powershell
-python main.py input/sample_transcript.txt
-```
-
-При успехе:
-
-`Отчёт успешно создан: reports/report_<имя_клиента>_YYYY-MM-DD_HH-MM.pdf` (если имя не извлечено — `reports/report_YYYY-MM-DD_HH-MM.pdf`).
-
-### Свой файл
-
-Укажите **реальный путь** к файлу:
-
-```powershell
-python main.py D:\Документы\диалог_01.txt
-```
-
-Если файл в текущей папке проекта:
-
-```powershell
-python main.py transcript.txt
-```
-
-### Ввод с клавиатуры
-
-Строка `END` отдельной строкой завершает ввод:
-
-```powershell
+```bash
 python main.py -i
 ```
 
-### Ввод из stdin
+Введите текст, затем `END` на отдельной строке для завершения.
 
-```powershell
-Get-Content .\input\sample_transcript.txt | python main.py -
-```
+### Подробное логирование
 
-### Подробные логи и traceback
-
-```powershell
+```bash
 python main.py -v input/sample_transcript.txt
 ```
 
-В режиме `-v` — уровень **DEBUG** и полный traceback при ошибке.
-
-### Типичная ошибка в PowerShell
-
-Если в буфер обмена попало **два приглашения** подряд, PowerShell может выдать «Непредвиденная лексема "PS"». Вставляйте **только** команду, начинающуюся с `python`.
-
 ---
 
-## Ошибка «Connection error» / `UnsupportedProtocol`
+## 🔌 Flask API
 
-1. **Не указан или неверен адрес шлюза.** Задайте `OPENAI_BASE_URL` (ProxyAPI: `https://api.proxyapi.ru/openai/v1`).
-2. **Системный прокси.** `HTTPS_PROXY` / `HTTP_PROXY` должны быть **с схемой**, например `http://127.0.0.1:7890`.
+### Запуск сервера
 
-Дополнительно: VPN, файрвол. Диагностика: `python main.py -v …`.
-
----
-
-## Flask API
-
-```powershell
+```bash
 python main.py --serve --host 127.0.0.1 --port 5000
 ```
 
-С подробными логами: `python main.py --serve -v --port 5000`
+### Эндпоинты
 
-- `GET /health` — проверка (в JSON есть `report_types`: `client`, `design`, `marketplace`).
-- `POST /generate` — для `client` / `design`: JSON `{"transcript": "...", "report_type": "design"}` (`report_type` по умолчанию `client`), либо form `transcript` + `report_type`, либо multipart `file` + поле `report_type`. Для **`marketplace`**: JSON `{"report_type": "marketplace", "product_name": "…", "price": "…", "notes": "…"}` (поля `product` / `product_notes` допускаются как синонимы); либо те же поля в form-data **без** обязательного `transcript`.
+#### `GET /health`
 
-Ответ при успехе: `{"ok": true, "report": "reports/....pdf", "report_type": "client"}`.
-
----
-
-## Формат ответа модели
-
-**Режим `client`:** поля `client_name`, `topic`, `main_request`, `deadlines_and_cost`, `product_essentials`, `mood`, `next_steps`.
-
-**Режим `design`:** `client_name`, `project_title`, `order_summary`, `pages_and_features`, `visual_direction`, `deadlines_and_budget`, `image_prompt` (англ., для генератора картинок), `next_steps`; в PDF дополнительно встраивается сгенерированное изображение (`preview_image_data_url`).
-
-**Режим `marketplace`:** из чата — `product_name`, `price_display`, `description`, `image_prompt` (англ.); в PDF — `card_background_data_url` (фон страницы, `gpt-image-1`).
-
-Логика — в `utils/ai_processor.py`, шаблоны — в `templates/`, PDF — в `utils/pdf_generator.py`.
-
-## Публикация на GitHub
-
-1. Убедитесь, что в индекс **не** попадёт `.env` (он в `.gitignore`). Проверка: `git status` не должен показывать `.env`.
-2. Создайте репозиторий на GitHub **без** README/LICENSE, если они уже есть локально (или объедините при первом push).
-3. В каталоге проекта:
+Проверка доступности сервиса.
 
 ```bash
-git init
-git add .
-git status   # просмотр: не должно быть .env, .venv/, PDF в reports/
-git commit -m "Initial commit: AI report generator (client, design, marketplace)"
-git branch -M main
-git remote add origin https://github.com/<ваш-логин>/<имя-репо>.git
-git push -u origin main
+curl http://localhost:5000/health
 ```
 
-На Windows в PowerShell команды те же (при установленном [Git for Windows](https://git-scm.com/download/win)).
+Ответ:
+```json
+{
+  "status": "ok",
+  "report_types": ["client", "design", "marketplace"]
+}
+```
 
-Подробнее про ключи — [SECURITY.md](SECURITY.md).
+#### `POST /generate`
+
+Генерация отчёта.
+
+**Для client/design:**
+```bash
+curl -X POST http://localhost:5000/generate \
+  -H "Content-Type: application/json" \
+  -d '{"transcript": "Текст диалога...", "report_type": "design"}'
+```
+
+**Для marketplace:**
+```bash
+curl -X POST http://localhost:5000/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "report_type": "marketplace",
+    "product_name": "Беспроводные наушники",
+    "price": "4990",
+    "notes": "Акцент на шумоподавлении"
+  }'
+```
+
+Ответ:
+```json
+{
+  "ok": true,
+  "report": "reports/report_design_2024-05-14_15-30.pdf",
+  "report_type": "design"
+}
+```
 
 ---
+
+## 📄 Формат выходных данных
+
+### Режим `client`
+
+Извлекаемые поля:
+- `client_name` — имя клиента
+- `topic` — тема разговора
+- `main_request` — основной запрос
+- `deadlines_and_cost` — сроки и бюджет
+- `product_essentials` — суть продукта
+- `mood` — настроение/тон
+- `next_steps` — следующие шаги
+
+### Режим `design`
+
+Извлекаемые поля:
+- `client_name`
+- `project_title`
+- `order_summary`
+- `pages_and_features`
+- `visual_direction`
+- `deadlines_and_budget`
+- `image_prompt` — промпт для генерации превью (англ.)
+- `next_steps`
+
+### Режим `marketplace`
+
+Генерируемые поля:
+- `product_name` — название для карточки
+- `price_display` — цена для отображения
+- `description` — описание товара
+- `image_prompt` — промпт для фона (англ.)
+
+---
+
+## ⚠️ Устранение неполадок
+
+### Ошибка подключения (`Connection error`, `UnsupportedProtocol`)
+
+1. Проверьте `OPENAI_BASE_URL` — должен включать схему (`https://...`)
+2. Убедитесь, что ключ API действителен
+3. При использовании прокси задайте `HTTPS_PROXY=http://host:port`
+
+### Ошибки WeasyPrint (Windows)
+
+```
+GLib-GIO-WARNING ...
+```
+
+Это не ошибка — информационные сообщения GTK. При генерации без `-v` они скрыты.
+
+### Flask API не отвечает
+
+1. Убедитесь, что порт не занят другим процессом
+2. Проверьте логи на наличие ошибок при старте сервера
+3. Попробуйте другой порт: `--port 5001`
+
+---
+
+## 📝 Примеры использования
+
+### Для агентств
+
+Автоматизируйте создание брифов после звонков с клиентами:
+
+```bash
+python main.py --report design call_transcript.txt
+```
+
+### Для селлеров на маркетплейсах
+
+Генерируйте карточки товаров пачками:
+
+```bash
+python main.py --report marketplace --product "Наушники" --price "4990"
+```
+
+### Для фрилансеров
+
+Сохраняйте итоги встреч в структурированном виде:
+
+```bash
+python main.py meeting_notes.txt
+```
+
+---
+
+## 🔒 Безопасность
+
+- **Никогда не коммитьте `.env`** — в репозитории только `.env.example`
+- **Ротируйте ключи** при подозрении на утечку
+- **Ограничьте доступ** к Flask API в продакшене
+
+Подробнее — в [SECURITY.md](SECURITY.md)
+
+---
+
+## 📄 Лицензия
+
+MIT License — см. [LICENSE](LICENSE)
+
+---
+
+## 👤 Автор
+
+**CherkasovAV**
+
+GitHub: [@CherkasovAV](https://github.com/CherkasovAV)
+
+---
+
+## 🙋 Поддержка
+
+- Вопросы и предложения: создайте Issue в репозитории
+- Telegram: [@CherkasovAV](https://t.me/CherkasovAV)
+- Email: [cherkasov83@yandex.ru](mailto:cherkasov83@yandex.ru)
